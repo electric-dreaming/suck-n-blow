@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adult Suck-and-Blow Game</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            resize: vertical;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Virtual Suck-and-Blow</h1>
+        <label for="namesInput">Enter names (comma-separated):</label>
+        <textarea id="namesInput" rows="4" placeholder="e.g., Alice, Bob, Charlie, Dana"></textarea>
+        <button id="startGameBtn">Start Game</button>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+
+        // A simple function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            const namesInput = document.getElementById('namesInput').value;
+            const outputDiv = document.getElementById('output');
+            
+            // Clear previous output
+            outputDiv.textContent = '';
+            
+            // Split the input string into an array of names
+            let names = namesInput.split(',').map(name => name.trim()).filter(name => name !== '');
+            
+            // Check if there are at least two players
+            if (names.length < 2) {
+                outputDiv.textContent = 'Please enter at least two names.';
+                return;
+            }
+
+            // Shuffle the names to randomize the starting order
+            names = shuffleArray(names);
+
+            // Announce the players and starting order
+            outputDiv.textContent += `Game starting with ${names.length} players...\n\n`;
+            outputDiv.textContent += `Players in a circle: ${names.join(', ')}\n\n`;
+
+            let currentIndex = 0;
+            const delay = 1000; // 1 second delay between each pass
+            const dropChance = 0.15; // 15% chance for the card to drop
+
+            // Recursive function to simulate the passing
+            function passCard() {
+                // Get the current player and the next player
+                const currentPlayer = names[currentIndex];
+                const nextIndex = (currentIndex + 1) % names.length;
+                const nextPlayer = names[nextIndex];
+
+                // Check for a drop
+                if (Math.random() < dropChance) {
+                    outputDiv.textContent += `💥 OOPS! The card was dropped between ${currentPlayer} and ${nextPlayer}! The game ends.\n`;
+                    return; // End the simulation
+                }
+
+                // Announce the successful pass
+                outputDiv.textContent += `${currentPlayer} successfully passes the card to ${nextPlayer}.\n`;
+                
+                // Move to the next player
+                currentIndex = nextIndex;
+
+                // Continue the game after a delay
+                setTimeout(passCard, delay);
+            }
+            
+            // Start the simulation after a small initial delay
+            setTimeout(passCard, delay);
+        }
+    </script>
+</body>
+</html>
