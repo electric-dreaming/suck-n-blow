@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adult Suck-and-Blow Game</title>
+    <title>Virtual Suck-and-Blow Game</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: sans-serif;
             background-color: #f0f0f0;
             display: flex;
             justify-content: center;
@@ -34,6 +34,152 @@
             font-weight: bold;
         }
         textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            resize: vertical;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Virtual Suck-and-Blow</h1>
+        <label for="namesInput">Enter names (comma-separated):</label>
+        <textarea id="namesInput" rows="4" placeholder="e.g., Alice, Bob, Charlie, Dana"></textarea>
+        <button id="startGameBtn">Start Game</button>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+
+        // A simple function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- NEW FUNCTION ---
+        // Function to check if a pair of names is forbidden
+        function isForbiddenPair(name1, name2, forbiddenPairs) {
+            // Check for both [name1, name2] and [name2, name1]
+            return forbiddenPairs.some(pair => 
+                (pair[0] === name1 && pair[1] === name2) ||
+                (pair[0] === name2 && pair[1] === name1)
+            );
+        }
+
+        function startGame() {
+            const namesInput = document.getElementById('namesInput').value;
+            const outputDiv = document.getElementById('output');
+            
+            outputDiv.textContent = '';
+            
+            let names = namesInput.split(',').map(name => name.trim()).filter(name => name !== '');
+            
+            if (names.length < 2) {
+                outputDiv.textContent = 'Please enter at least two names.';
+                return;
+            }
+
+            // --- NEW: DEFINE FORBIDDEN PAIRS ---
+            // You can easily add or remove pairs here.
+            // This is case-sensitive.
+            const forbiddenPairs = [
+                ['Alice', 'Bob'],
+                ['Charlie', 'Dana']
+            ];
+
+            let isValidArrangement = false;
+            let attemptCount = 0;
+            const maxAttempts = 100;
+
+            // --- NEW: REPEATEDLY SHUFFLE UNTIL VALID ARRANGEMENT ---
+            while (!isValidArrangement && attemptCount < maxAttempts) {
+                names = shuffleArray(names);
+                isValidArrangement = true; // Assume it's valid until we find a forbidden pair
+
+                // Check all adjacent pairs, including the wrap-around
+                for (let i = 0; i < names.length; i++) {
+                    const currentPlayer = names[i];
+                    const nextPlayer = names[(i + 1) % names.length]; // Modulo for the wrap-around
+                    
+                    if (isForbiddenPair(currentPlayer, nextPlayer, forbiddenPairs)) {
+                        isValidArrangement = false; // Found a forbidden pair, need to re-shuffle
+                        break; // Exit the loop and try again
+                    }
+                }
+                attemptCount++;
+            }
+
+            // If we couldn't find a valid arrangement after maxAttempts
+            if (!isValidArrangement) {
+                outputDiv.textContent = 'Could not find a valid arrangement without forbidden pairs after multiple attempts. Please check your names and forbidden pairs.';
+                return;
+            }
+
+            // Announce the players and starting order
+            outputDiv.textContent += `Game starting with ${names.length} players...\n\n`;
+            outputDiv.textContent += `Players in a circle: ${names.join(', ')}\n\n`;
+
+            let currentIndex = 0;
+            const delay = 1000; // 1 second delay between each pass
+            const dropChance = 0.15; // 15% chance for the card to drop
+
+            function passCard() {
+                const currentPlayer = names[currentIndex];
+                const nextIndex = (currentIndex + 1) % names.length;
+                const nextPlayer = names[nextIndex];
+
+                if (Math.random() < dropChance) {
+                    outputDiv.textContent += `💥 OOPS! The card was dropped between ${currentPlayer} and ${nextPlayer}! The game ends.\n`;
+                    return;
+                }
+
+                outputDiv.textContent += `${currentPlayer} successfully passes the card to ${nextPlayer}.\n`;
+                
+                currentIndex = nextIndex;
+
+                setTimeout(passCard, delay);
+            }
+            
+            setTimeout(passCard, delay);
+        }
+    </script>
+</body>
+</html>
             width: 100%;
             padding: 10px;
             border-radius: 5px;
